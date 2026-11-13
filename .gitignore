@@ -1,0 +1,9 @@
+/.env
+/storage/*
+!/storage/.gitkeep
+!/storage/pacientes/
+!/storage/pacientes/demo-paciente-*.png
+!/storage/atenciones/
+!/storage/comprobantes/
+!/storage/logs/
+!/storage/**/.gitkeep

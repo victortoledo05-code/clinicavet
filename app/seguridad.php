@@ -1,0 +1,19 @@
+<?php
+declare(strict_types=1);
+function e(mixed $v):string{return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
+function usuario():?array{return $_SESSION['usuario']??null;}
+function es_superadmin():bool{return (usuario()['rol']??'')==='superadministrador';}
+function exigir_acceso():void{if(!usuario())redirigir('login');}
+function exigir_superadmin():void{exigir_acceso();if(!es_superadmin())abortar(403,'No tienes permiso para acceder a esta sección.');}
+function csrf():string{if(empty($_SESSION['csrf']))$_SESSION['csrf']=bin2hex(random_bytes(32));return $_SESSION['csrf'];}
+function campo_csrf():string{return '<input type="hidden" name="csrf" value="'.e(csrf()).'">';}
+function validar_csrf():void{if(!hash_equals($_SESSION['csrf']??'',(string)($_POST['csrf']??'')))abortar(419,'La sesión del formulario venció. Recarga e inténtalo nuevamente.');}
+function redirigir(string $r,array $q=[]):never{$u='index.php?r='.rawurlencode($r);if($q)$u.='&'.http_build_query($q);header('Location: '.$u);exit;}
+function flash(string $t,string $m):void{$_SESSION['flash'][]=['tipo'=>$t,'mensaje'=>$m];}
+function abortar(int $c,string $m):never{http_response_code($c);$GLOBALS['error_http']=$m;require __DIR__.'/comunes/error.php';exit;}
+function post():void{if($_SERVER['REQUEST_METHOD']!=='POST')abortar(405,'Método no permitido.');validar_csrf();}
+function operacion_id():string{return bin2hex(random_bytes(16));}
+function clp(int|float|string $m):string{return '$'.number_format((int)$m,0,',','.');}
+function configuracion_valor(string $clave,string $defecto=''):string{static $cache=[];if(array_key_exists($clave,$cache))return $cache[$clave];try{$r=fila('SELECT valor FROM configuracion WHERE clave=?',[$clave]);return $cache[$clave]=(string)($r['valor']??$defecto);}catch(Throwable){return $defecto;}}
+function utc_a_local(?string $f,string $fmt='d-m-Y H:i'):string{if(!$f)return '—';return(new DateTimeImmutable($f,new DateTimeZone('UTC')))->setTimezone(new DateTimeZone($GLOBALS['config']['timezone']))->format($fmt);}
+function auditar(string $a,string $e,int|string|null $id=null,?string $motivo=null,?array $c=null):void{ejecutar('INSERT INTO auditoria (usuario_id,accion,entidad,entidad_id,motivo,cambios,ip,creado_en) VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP())',[usuario()['id']??null,$a,$e,$id,$motivo,$c?json_encode($c,JSON_UNESCAPED_UNICODE):null,$_SERVER['REMOTE_ADDR']??null]);}

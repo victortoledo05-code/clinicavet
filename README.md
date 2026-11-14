@@ -1,22 +1,45 @@
 # ClinicVet
 
-MVP privado para operación clínica veterinaria, construido con el stack INAUDIS definido en la especificación: PHP 8.3, MySQL 8, PDO, JavaScript nativo y CSS local. No requiere Node ni un framework.
+Sistema privado para la operación de una clínica veterinaria, desarrollado con PHP 8.3, MySQL 8, PDO, JavaScript nativo y CSS local. No requiere Node ni un framework.
 
-## Requisitos
+## Requisitos de producción
 
-- PHP 8.3 con `pdo_mysql`, `fileinfo`, `mbstring` y `zip`.
-- MySQL 8 y Apache 2.4 con `mod_rewrite`.
-- HTTPS para producción.
+- PHP 8.3 o superior con `pdo_mysql`, `fileinfo` y `mbstring`.
+- MySQL 8.
+- Apache 2.4 o Nginx con HTTPS.
+- Acceso de escritura del usuario PHP exclusivamente al directorio configurado en `STORAGE_PATH`.
+- El dominio debe apuntar únicamente a la carpeta `public/`, nunca a la raíz del repositorio.
 
-## Instalación en Laragon
+## Instalación nueva
 
-1. Crear una base MySQL vacía con cotejamiento `utf8mb4_0900_ai_ci`.
-2. Importar, solo en una base nueva, `database/estructura.sql` y después `database/datos_iniciales.sql`.
-3. Copiar `.env.example` a `.env` y completar URL y credenciales. El archivo real está ignorado por Git.
-4. Configurar el virtual host con raíz en `C:/laragon/www/clinicalvet/public`; nunca exponer la raíz del repositorio.
-5. Crear el primer usuario desde una terminal: `php scripts/crear_superadmin.php correo@dominio.cl "Nombre"`.
-6. Verificar que el usuario del servidor web pueda escribir en `storage/`, pero que esa carpeta no sea pública.
+1. Crear una base de datos MySQL vacía con `utf8mb4_0900_ai_ci` y un usuario exclusivo con permisos sobre esa base.
+2. Importar `database/estructura.sql`.
+3. Opcionalmente importar `database/datos_iniciales.sql` para cargar catálogos y servicios iniciales. No crea usuarios ni datos clínicos.
+4. Copiar `.env.example` como `.env` y completar el dominio HTTPS, la base de datos y una ruta privada para `STORAGE_PATH`.
+5. Crear las carpetas `pacientes`, `atenciones`, `comprobantes`, `configuracion` y `logs` dentro de `STORAGE_PATH`, con permisos de escritura para PHP.
+6. Configurar el servidor web con `public/` como raíz pública.
+7. Crear el primer superadministrador:
 
-Para una revisión local limitada puede usarse `php -S 127.0.0.1:8080 -t public`, pero el servidor integrado no reproduce las reglas y cabeceras de Apache y no debe usarse en producción.
+   ```bash
+   php scripts/crear_superadmin.php administrador@clinica.cl "Administrador principal"
+   ```
 
-No se ejecutaron migraciones ni pruebas en esta entrega: requieren autorización explícita según la especificación.
+   El comando solicitará una contraseña de al menos 12 caracteres sin guardarla en el repositorio.
+
+8. Abrir `https://tu-dominio.cl/index.php?r=login` e ingresar con el correo y la contraseña recién definidos.
+
+La credencial local `admin@clinicavet.local` no se incluye en una instalación nueva ni debe utilizarse en producción.
+
+## Actualizar una instalación existente
+
+Antes de actualizar, respaldar en la misma ventana operativa tanto la base MySQL como `STORAGE_PATH`. Revisar y aplicar, en orden, únicamente los archivos pendientes de `database/cambios/`; no volver a importar `estructura.sql` sobre una base con datos.
+
+## Validación
+
+Para revisar sintaxis antes de publicar:
+
+```bash
+find app public scripts -name '*.php' -print0 | xargs -0 -n1 php -l
+```
+
+La guía completa está en `docs/INSTALACION.md`.

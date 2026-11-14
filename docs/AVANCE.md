@@ -13,6 +13,7 @@
 - Demo ampliada a 25 atenciones, 10 servicios, 9 productos/medicamentos, lotes y movimientos financieros.
 - Alertas de inventario activables por producto con mínimo configurable y acceso desde la campana superior.
 - Finanzas con filtros por rango, tipo y medio; tarjetas de resumen y detalle verificable de movimientos.
+- Seguimientos internos para vacunas, desparasitación, controles, exámenes, medicamentos y procedimientos; incluye estados, filtros, prioridad y trazabilidad de contacto manual.
 
 ## Pendiente para completar la definición de terminado
 

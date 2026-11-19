@@ -47,3 +47,43 @@ function guardar_logo_clinica(string $campo='logo'): void
     auditar('logo','configuracion');
 }
 function servir_logo_clinica():never{$nombre=configuracion_valor('clinica_logo_archivo');$mime=configuracion_valor('clinica_logo_mime','image/png');$base=realpath(rtrim($GLOBALS['config']['storage'],'/\\').DIRECTORY_SEPARATOR.'configuracion');$ruta=$base&&$nombre?realpath($base.DIRECTORY_SEPARATOR.basename($nombre)):false;if(!$ruta||!$base||!str_starts_with($ruta,$base.DIRECTORY_SEPARATOR))abortar(404,'Logo no disponible.');header('Content-Type: '.$mime);header('Content-Length: '.filesize($ruta));header('X-Content-Type-Options: nosniff');header('Cache-Control: private, max-age=3600');readfile($ruta);exit;}
+
+function guardar_evidencias_atencion():void{
+    post();$id=id_get();$a=fila('SELECT id,paciente_id FROM atenciones WHERE id=?',[$id]);
+    if(!$a)abortar(404,'Atención no encontrada.');
+    $files=$_FILES['evidencias']??null;
+    if(!$files||!is_array($files['name']??null))abortar(422,'Selecciona fotografías o documentos.');
+    $permitidos=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp','application/pdf'=>'pdf'];
+    $max=min((int)($GLOBALS['config']['upload_max_mb']??10),10)*1024*1024;
+    $dir=rtrim($GLOBALS['config']['storage'],'/\\').DIRECTORY_SEPARATOR.'atenciones';
+    if(!is_dir($dir)&&!mkdir($dir,0770,true)&&!is_dir($dir))abortar(500,'No se pudo preparar el almacenamiento.');
+    $guardados=0;
+    foreach($files['name'] as $i=>$nombreOriginal){
+        $error=(int)$files['error'][$i];if($error===UPLOAD_ERR_NO_FILE)continue;
+        if($error!==UPLOAD_ERR_OK)abortar(422,'Error al recibir uno de los archivos.');
+        $tmp=$files['tmp_name'][$i];$size=(int)$files['size'][$i];
+        if($size<1||$size>$max||!is_uploaded_file($tmp))abortar(422,'Archivo vacío o demasiado grande (máximo 10 MB).');
+        $mime=(new finfo(FILEINFO_MIME_TYPE))->file($tmp);
+        if(!isset($permitidos[$mime]))abortar(422,'Solo se permiten JPG, PNG, WebP o PDF.');
+        if($mime!=='application/pdf'&&@getimagesize($tmp)===false)abortar(422,'Imagen inválida.');
+        if($mime==='application/pdf'&&file_get_contents($tmp,false,null,0,5)!=='%PDF-')abortar(422,'PDF inválido.');
+        $nombre=bin2hex(random_bytes(20)).'.'.$permitidos[$mime];$destino=$dir.DIRECTORY_SEPARATOR.$nombre;
+        if(!move_uploaded_file($tmp,$destino))abortar(500,'No se pudo guardar el archivo.');
+        try{ejecutar('INSERT INTO archivos(paciente_id,atencion_id,tipo,ruta_privada,nombre_original,mime,tamano,autor_id) VALUES (?,?,"evidencia",?,?,?, ?,?)',[(int)$a['paciente_id'],$id,$nombre,mb_substr(basename((string)$nombreOriginal),0,255),$mime,$size,usuario()['id']]);}
+        catch(Throwable $e){@unlink($destino);throw $e;}
+        $guardados++;
+    }
+    if(!$guardados)abortar(422,'Selecciona al menos un archivo.');
+    auditar('adjuntar_evidencia','atenciones',$id);flash('ok',$guardados.' archivo(s) agregado(s) a la atención.');
+    redirigir('atencion.detalle',['id'=>$id]);
+}
+function servir_evidencia_atencion():never{
+    $id=id_get();$a=fila('SELECT * FROM archivos WHERE id=? AND tipo="evidencia" AND retirado_en IS NULL',[$id]);
+    if(!$a)abortar(404,'Archivo no encontrado.');
+    $base=realpath(rtrim($GLOBALS['config']['storage'],'/\\').DIRECTORY_SEPARATOR.'atenciones');
+    $ruta=$base?realpath($base.DIRECTORY_SEPARATOR.$a['ruta_privada']):false;
+    if(!$base||!$ruta||!str_starts_with($ruta,$base.DIRECTORY_SEPARATOR)||!is_file($ruta))abortar(404,'Archivo no disponible.');
+    header('Content-Type: '.$a['mime']);header('Content-Length: '.filesize($ruta));
+    header('X-Content-Type-Options: nosniff');header('Content-Disposition: inline; filename="evidencia-'.$id.'.'.($a['mime']==='application/pdf'?'pdf':'jpg').'"');
+    header('Cache-Control: private, no-store');readfile($ruta);exit;
+}

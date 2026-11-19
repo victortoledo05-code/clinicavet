@@ -9,7 +9,7 @@ function guardar_insumo_atencion():void{
         $pdo->beginTransaction();
         if(!fila('SELECT id FROM atenciones WHERE id=? AND estado<>"anulada"',[$id]))throw new RuntimeException('Atención no disponible.');
         $l=fila('SELECT l.*,p.activo FROM lotes l JOIN productos p ON p.id=l.producto_id WHERE l.id=? FOR UPDATE',[$lote]);
-        if(!$l||!$l['activo']||($l['vencimiento']&&$l['vencimiento']<date('Y-m-d'))||$cantidad>(float)$l['saldo_base'])throw new RuntimeException('Lote vencido o stock insuficiente.');
+        if(!$l||!$l['activo']||(($l['vencimiento']&&$l['vencimiento']<date('Y-m-d'))||($l['vence_abierto']&&$l['vence_abierto']<date('Y-m-d')))||$cantidad>(float)$l['saldo_base'])throw new RuntimeException('Lote vencido o stock insuficiente.');
         ejecutar('UPDATE lotes SET saldo_base=saldo_base-? WHERE id=?',[$cantidad,$lote]);
         ejecutar('INSERT INTO movimientos_stock(lote_id,atencion_id,tipo,cantidad,costo_historico,motivo,autor_id,operacion_id) VALUES (?,?,"consumo",?,?,"Insumo utilizado en atención",?,?)',[$lote,$id,-$cantidad,$l['costo_unitario_base'],usuario()['id'],requerido('operacion_id',32)]);
         $mov=(int)$pdo->lastInsertId();$pdo->commit();

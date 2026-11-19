@@ -13,7 +13,7 @@ $rutas=[
  'pacientes.resumen'=>['resumen_atenciones_pacientes',true],
  'paciente.guardar_foto'=>['guardar_paciente_con_foto',true],
  'paciente.foto'=>['servir_foto_paciente',true],
- 'atenciones'=>['pagina_atenciones_filtrada',true], 'atencion.form'=>['form_atencion',true], 'atencion.guardar'=>['guardar_atencion',true], 'atencion.detalle'=>['detalle_atencion',true], 'atencion.aclarar'=>['aclarar_atencion',true],
+ 'atenciones'=>['pagina_atenciones_filtrada',true], 'atencion.form'=>['form_atencion',true], 'atencion.guardar'=>['guardar_atencion',true], 'atencion.detalle'=>['detalle_atencion',true], 'atencion.archivos.guardar'=>['guardar_evidencias_atencion',true], 'atencion.archivo'=>['servir_evidencia_atencion',true], 'atencion.aclarar'=>['aclarar_atencion',true],
  'seguimientos'=>['pagina_seguimientos',true], 'seguimiento.form'=>['form_seguimiento',true], 'seguimiento.guardar'=>['guardar_seguimiento',true], 'seguimiento.estado'=>['cambiar_estado_seguimiento',true], 'seguimiento.contacto'=>['registrar_contacto_seguimiento',true], 'seguimientos.contador'=>['contador_seguimientos_json',true],
  'servicios'=>['pagina_servicios_gestion','super'], 'servicio.guardar'=>['guardar_servicio_gestion','super'], 'servicio.estado'=>['cambiar_estado_servicio','super'], 'servicio.eliminar'=>['eliminar_servicio','super'],
  'servicio.categorias'=>['pagina_categorias_servicio','super'], 'servicio.categorias.json'=>['categorias_servicio_json','super'], 'servicio.categoria.guardar'=>['guardar_categoria_servicio','super'], 'servicio.categoria.estado'=>['cambiar_estado_categoria_servicio','super'], 'servicio.categoria.eliminar'=>['eliminar_categoria_servicio','super'],

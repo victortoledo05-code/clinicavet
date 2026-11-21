@@ -7,7 +7,7 @@ function guardar_insumo_atencion():void{
     $pdo=db();
     try{
         $pdo->beginTransaction();
-        if(!fila('SELECT id FROM atenciones WHERE id=? AND estado<>"anulada"',[$id]))throw new RuntimeException('Atención no disponible.');
+        $a=fila('SELECT responsable_id,estado FROM atenciones WHERE id=? FOR UPDATE',[$id]);if(!$a||$a['estado']!=='borrador'||!puede_editar_atencion($a))throw new RuntimeException('Atención no disponible para modificar insumos.');
         $l=fila('SELECT l.*,p.activo FROM lotes l JOIN productos p ON p.id=l.producto_id WHERE l.id=? FOR UPDATE',[$lote]);
         if(!$l||!$l['activo']||(($l['vencimiento']&&$l['vencimiento']<date('Y-m-d'))||($l['vence_abierto']&&$l['vence_abierto']<date('Y-m-d')))||$cantidad>(float)$l['saldo_base'])throw new RuntimeException('Lote vencido o stock insuficiente.');
         ejecutar('UPDATE lotes SET saldo_base=saldo_base-? WHERE id=?',[$cantidad,$lote]);
@@ -20,7 +20,7 @@ function revertir_insumo_atencion():void{
     post();$id=id_get();if(es_veterinario())exigir_edicion_atencion($id);$mov=(int)($_POST['movimiento_id']??0);$pdo=db();
     try{
         $pdo->beginTransaction();
-        $m=fila('SELECT * FROM movimientos_stock WHERE id=? AND atencion_id=? AND tipo="consumo" FOR UPDATE',[$mov,$id]);
+        $a=fila('SELECT responsable_id,estado FROM atenciones WHERE id=? FOR UPDATE',[$id]);if(!$a||$a['estado']!=='borrador'||!puede_editar_atencion($a))throw new RuntimeException('Atención no disponible para modificar insumos.');$m=fila('SELECT * FROM movimientos_stock WHERE id=? AND atencion_id=? AND tipo="consumo" FOR UPDATE',[$mov,$id]);
         if(!$m||fila('SELECT id FROM movimientos_stock WHERE reverso_id=?',[$mov]))throw new RuntimeException('Consumo inexistente o ya revertido.');
         $l=fila('SELECT id FROM lotes WHERE id=? FOR UPDATE',[$m['lote_id']]);
         if(!$l)throw new RuntimeException('Lote no encontrado.');

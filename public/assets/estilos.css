@@ -17,3 +17,22 @@
 
 /* Dos acciones claras para evidencias clínicas */
 .opciones-adjuntos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin:1rem 0}.opciones-adjuntos form{display:grid;gap:.7rem;align-content:start}.opcion-adjunto{position:relative;display:flex;min-height:88px;text-align:center;cursor:pointer;overflow:hidden}.opcion-adjunto input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.opcion-adjunto:focus-within{outline:3px solid #e1932b;outline-offset:3px}.opciones-adjuntos button{width:100%}
+
+
+/* Navegación lateral simplificada: cambios solo visuales */
+.lateral{display:flex;flex-direction:column;overflow-y:auto;padding:1.25rem .85rem}
+.lateral .marca{padding:.3rem .4rem 1.1rem;margin-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.15);font-size:1.18rem}
+.lateral nav{display:flex;flex-direction:column;gap:.45rem}
+.lateral nav>a,.lateral .grupo-menu>summary{display:flex;align-items:center;gap:.7rem;min-height:48px;padding:.85rem .8rem;border-radius:10px;font-weight:600;cursor:pointer}
+.lateral nav>a span,.lateral .grupo-menu>summary span{display:inline-flex;align-items:center;justify-content:center;width:22px;flex-shrink:0;font-size:1.2rem}
+.lateral .grupo-menu{margin:0}
+.lateral .grupo-menu>summary{list-style:none;position:relative;padding-right:1.7rem}
+.lateral .grupo-menu>summary::-webkit-details-marker{display:none}
+.lateral .grupo-menu>summary::after{content:'⌄';position:absolute;right:.65rem;transition:transform .15s}
+.lateral .grupo-menu[open]>summary::after{transform:rotate(180deg)}
+.lateral .grupo-menu>summary:hover,.lateral .grupo-menu>summary:focus-visible{background:#176b63}
+.lateral .grupo-menu[open]>summary{background:#176b63}
+.lateral .grupo-menu>a{margin:.2rem 0 .2rem 1.5rem;padding:.7rem .65rem;min-height:42px;font-size:.94rem;border-left:1px solid rgba(255,255,255,.2);border-radius:0 8px 8px 0}
+.lateral .grupo-administracion{border-top:1px solid rgba(255,255,255,.15);padding-top:.65rem;margin-top:.6rem}
+.lateral nav .nav-destacado{background:#1d7e74!important;margin-bottom:.65rem;justify-content:center;border-radius:10px}
+.lateral nav .nav-destacado:hover{background:#22998d!important}

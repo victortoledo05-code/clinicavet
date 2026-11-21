@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 function e(mixed $v):string{return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
-function usuario():?array{if(empty($_SESSION['usuario']['id']))return null;static $actual=null;if($actual!==null)return $actual;$u=fila('SELECT id,nombre,rol,activo,editar_atenciones_ajenas FROM usuarios WHERE id=?',[(int)$_SESSION['usuario']['id']]);if(!$u||!(int)$u['activo']){$_SESSION['usuario']=null;return null;}return $actual=['id'=>(int)$u['id'],'nombre'=>$u['nombre'],'rol'=>$u['rol'],'editar_atenciones_ajenas'=>(int)($u['editar_atenciones_ajenas']??0)];}
+function usuario():?array{if(empty($_SESSION['usuario']['id']))return null;static $actual=null;if($actual!==null)return $actual;try{$u=fila('SELECT id,nombre,rol,activo,editar_atenciones_ajenas FROM usuarios WHERE id=?',[(int)$_SESSION['usuario']['id']]);}catch(PDOException $e){if($e->getCode()!=='42S22')throw $e;$u=fila('SELECT id,nombre,rol,activo FROM usuarios WHERE id=?',[(int)$_SESSION['usuario']['id']]);}if(!$u||!(int)$u['activo']){$_SESSION['usuario']=null;return null;}return $actual=['id'=>(int)$u['id'],'nombre'=>$u['nombre'],'rol'=>$u['rol'],'editar_atenciones_ajenas'=>(int)($u['editar_atenciones_ajenas']??0)];}
 function es_superadmin():bool{return (usuario()['rol']??'')==='superadministrador';}
 function es_veterinario():bool{return (usuario()['rol']??'')==='veterinario';}
 function puede_editar_atencion(array $atencion):bool{if(($atencion['estado']??'')!=='borrador')return false;if(!es_veterinario())return true;if((int)($atencion['responsable_id']??0)===(int)(usuario()['id']??0))return true;return (int)(usuario()['editar_atenciones_ajenas']??0)===1;}

@@ -3,6 +3,10 @@ declare(strict_types=1);
 function e(mixed $v):string{return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function usuario():?array{return $_SESSION['usuario']??null;}
 function es_superadmin():bool{return (usuario()['rol']??'')==='superadministrador';}
+function es_veterinario():bool{return (usuario()['rol']??'')==='veterinario';}
+function puede_editar_atencion(array $atencion):bool{if(!es_veterinario())return true;if(($atencion['estado']??'')!=='borrador')return false;if((int)($atencion['responsable_id']??0)===(int)(usuario()['id']??0))return true;return (int)(usuario()['editar_atenciones_ajenas']??0)===1;}
+function exigir_edicion_atencion(int $id):array{$a=fila('SELECT id,responsable_id,estado FROM atenciones WHERE id=?',[$id]);if(!$a)abortar(404,'Atención no encontrada.');if(!puede_editar_atencion($a))abortar(403,'No tienes permiso para modificar esta atención.');return $a;}
+function exigir_no_veterinario():void{exigir_acceso();if(es_veterinario())abortar(403,'Esta sección no está disponible para el perfil clínico.');}
 function exigir_acceso():void{if(!usuario())redirigir('login');}
 function exigir_superadmin():void{exigir_acceso();if(!es_superadmin())abortar(403,'No tienes permiso para acceder a esta sección.');}
 function csrf():string{if(empty($_SESSION['csrf']))$_SESSION['csrf']=bin2hex(random_bytes(32));return $_SESSION['csrf'];}

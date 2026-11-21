@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 function guardar_insumo_atencion():void{
-    post();$id=id_get();$lote=(int)($_POST['lote_id']??0);$cantidad=(float)($_POST['cantidad']??0);
+    post();$id=id_get();if(es_veterinario())exigir_edicion_atencion($id);$lote=(int)($_POST['lote_id']??0);$cantidad=(float)($_POST['cantidad']??0);
     if(!is_finite($cantidad)||$cantidad<=0||$cantidad>99999999)abortar(422,'Cantidad inválida.');
     $pdo=db();
     try{
@@ -17,7 +17,7 @@ function guardar_insumo_atencion():void{
     auditar('consumo_atencion','movimientos_stock',$mov);flash('ok','Insumo descontado del inventario.');redirigir('atencion.detalle',['id'=>$id]);
 }
 function revertir_insumo_atencion():void{
-    post();$id=id_get();$mov=(int)($_POST['movimiento_id']??0);$pdo=db();
+    post();$id=id_get();if(es_veterinario())exigir_edicion_atencion($id);$mov=(int)($_POST['movimiento_id']??0);$pdo=db();
     try{
         $pdo->beginTransaction();
         $m=fila('SELECT * FROM movimientos_stock WHERE id=? AND atencion_id=? AND tipo="consumo" FOR UPDATE',[$mov,$id]);

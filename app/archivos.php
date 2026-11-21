@@ -49,7 +49,7 @@ function guardar_logo_clinica(string $campo='logo'): void
 function servir_logo_clinica():never{$nombre=configuracion_valor('clinica_logo_archivo');$mime=configuracion_valor('clinica_logo_mime','image/png');$base=realpath(rtrim($GLOBALS['config']['storage'],'/\\').DIRECTORY_SEPARATOR.'configuracion');$ruta=$base&&$nombre?realpath($base.DIRECTORY_SEPARATOR.basename($nombre)):false;if(!$ruta||!$base||!str_starts_with($ruta,$base.DIRECTORY_SEPARATOR))abortar(404,'Logo no disponible.');header('Content-Type: '.$mime);header('Content-Length: '.filesize($ruta));header('X-Content-Type-Options: nosniff');header('Cache-Control: private, max-age=3600');readfile($ruta);exit;}
 
 function guardar_evidencias_atencion():void{
-    post();$id=id_get();$a=fila('SELECT id,paciente_id FROM atenciones WHERE id=?',[$id]);
+    post();$id=id_get();if(es_veterinario())exigir_edicion_atencion($id);$a=fila('SELECT id,paciente_id FROM atenciones WHERE id=?',[$id]);
     if(!$a)abortar(404,'Atención no encontrada.');
     $files=$_FILES['evidencias']??null;
     if(!$files||!is_array($files['name']??null))abortar(422,'Selecciona fotografías o documentos.');
